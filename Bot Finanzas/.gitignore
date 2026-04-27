@@ -1,0 +1,20 @@
+# Entornos virtuales (Muy importante no subirlos)
+venv/
+env/
+ENV/
+
+# Archivos temporales de Python
+__pycache__/
+*.py[cod]
+
+# Archivos de configuración con datos sensibles
+.env
+config.py (si guardas claves aquí)
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+
+# Resultados de tus scripts (opcional)
+*.csv
+*.xlsx

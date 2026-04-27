@@ -1,0 +1,15 @@
+
+adjective1 = input("ponga un adjetivo (descripción):")
+noun1 = input("ponga un sustantivo (descripción):")
+adjective2 = input("ponga un adjetivo (descripción):")
+adjective3 = input("ponga un adjetivo (descripción):")
+adjective4 = input("ponga un adjetivo (descripción):")
+adjective5 = input("ponga un adjetivo (descripción):")
+verb1 = input("ponga un verbo terminado en iendo (descripción):")
+
+print(f"Hoy me fui a comer al restaurante {adjective1}")
+print(f"Allí estaba el papulince de {noun1}")
+print(f"El estaba comiendo unas {adjective2}")
+print(f"Me dijo que estaba {adjective3}")
+print(f"Ahora me dieron ganas de comer también {adjective2} con {adjective4}!")
+print(f"Probablemente me vaya {verb1} a la {adjective5}")
