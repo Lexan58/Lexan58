@@ -1,4 +1,4 @@
-# Hi there! I'm Jeisson (Lexan) 👋
+# Hi there! I'm Jeison (Lexan) 👋
 
 I am a **multidisciplinary professional** focused on software development with **Python**, digital content creation, and project management. I am passionate about automating processes and building useful tools that make daily life easier.
 
