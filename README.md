@@ -1,26 +1,26 @@
-# ¡Hola! Soy Jeison (Lexan) 👋
+# Hi there! I'm Jeisson (Lexan) 👋
 
-Soy un **profesional multidisciplinario** enfocado en el desarrollo de software con **Python**, la creación de contenido digital y la gestión de proyectos. Me apasiona automatizar procesos y construir herramientas útiles que faciliten el día a día.
+I am a **multidisciplinary professional** focused on software development with **Python**, digital content creation, and project management. I am passionate about automating processes and building useful tools that make daily life easier.
 
-### 2. Lo que estoy haciendo ahora
-* 🤖 **Automatización:** Desarrollando bots de búsqueda de empleo en LinkedIn y herramientas de análisis de datos.
-* 📈 **Proyectos:** Creando soluciones para finanzas personales y gestión de proyectos de turismo sostenible.
-* ✍️ **Contenido:** Creador de contenido educativo e histórico en TikTok y YouTube (Los datos de Lexan).
+### 🚀 What I'm working on right now
+* 🤖 **Automation:** Developing LinkedIn job search bots and data analysis tools.
+* 📈 **Projects:** Creating personal finance solutions and sustainable tourism project management tools.
+* ✍️ **Content:** Creating educational and historical content on TikTok and YouTube (Los datos de Lexan).
 
-### 🛠️ Tecnologías y Herramientas
-* **Lenguajes:** Python (Selenium, Pandas, Dotenv)
-* **Control de Versiones:** Git & GitHub
-* **Idiomas:** Español (Nativo), Inglés, Alemán y Japonés (en aprendizaje constante 🇯🇵🇩🇪)
-* **Entorno:** Visual Studio Code
+### 🛠️ Technologies & Tools
+* **Languages:** Python (Selenium, Pandas)
+* **Version Control:** Git & GitHub
+* **Languages:** Spanish (Native), English, German, and Japanese (currently learning 🇯🇵🇩🇪)
+* **Environment:** Visual Studio Code
 
-### 📚 Intereses Personales
-* Entusiasta de la historia antigua y la Filosofía (Babilonia, historia random de reyes, Segunda Guerra Mundial).
-* Melómano: J-Rock, Visual Kei, Folk pop, Djent, Jazz, Blues, Música clásica, y Pop Turco.
-* Disciplina física: Calistenia.
+### 📚 Personal Interests
+* **History & Philosophy Enthusiast:** Ancient Babylon, random royal history, and WWII.
+* **Music Lover:** J-Rock, Visual Kei, Folk pop, Djent, Jazz, Blues, Classical, and Turkish Pop.
+* **Fitness:** Calisthenics discipline.
 
-### 📫 Cómo contactarme
-* **LinkedIn:** https://www.linkedin.com/in/jeison-castellanos8715/
+### 📫 How to reach me
+* **LinkedIn:** [https://www.linkedin.com/in/jeison-castellanos8715/]
 * **YouTube/TikTok:** @losdatosdelexan
 
 ---
-*“Los límites de mi lenguaje, son los límites de mi mundo”*
+*"The limits of my language mean the limits of my world."*
