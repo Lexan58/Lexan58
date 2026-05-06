@@ -2,116 +2,126 @@ import asyncio
 import pandas as pd
 import os
 import requests
+from google import genai
 from playwright.async_api import async_playwright
 from datetime import datetime
+import os
+from dotenv import load_dotenv
 
-# === CONFIGURACIÓN ===
-TELEGRAM_TOKEN = "8549182157:AAHyAK3C2iFmNsCtsQo5998V9uDR1gSD0Kc"
-TELEGRAM_CHAT_ID = "7011782289"
-PALABRAS_CLAVE_EXITO = ["python", "video", "remoto", "remote", "edit", "asistente", "junior", "datos", "desarrollador", "ia", "ai"]
+# Cargar las variables del archivo .env
+load_dotenv()
 
-def enviar_telegram(mensaje):
+# === 1. CONFIGURACIÓN DE LLAVES ===
+TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
+TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+
+# El resto de tu código se mantiene igual...
+client = genai.Client(api_key=GOOGLE_API_KEY)
+
+# === 2. DICCIONARIO DE TALENTOS (SCORING) ===
+SCORING_SISTEMA = {
+    "TECH_IA": {"python": 8, "automation": 7, "scraping": 6, "ai": 5, "ia": 5},
+    "ACADEMIC": {"apa": 15, "vancouver": 15, "thesis": 10, "academic": 10, "redacción": 8},
+    "HEALTH": {"medical": 12, "neuroscience": 15, "salud": 7, "emt": 10},
+    "PROYECTOS": {"project": 8, "management": 7, "prefactibilidad": 10, "factibilidad": 10, "liderazgo": 5}
+}
+
+# === 3. LÓGICA DE ROTACIÓN DIARIA (BILINGÜE) ===
+def obtener_config_dia():
+    # 0=Lun, 1=Mar, 2=Mié, 3=Jue, 4=Vie
+    dia = datetime.now().weekday()
+    
+    # Hemos optimizado las keywords para que busquen en inglés y español
+    config = {
+        0: {"kw": 'Medical Interpreter OR "Traductor Médico"', "modo": "Salud/Neuro"},
+        1: {"kw": 'Python Automation OR "Desarrollador Python"', "modo": "Tech/IA"},
+        2: {"kw": 'Project Coordinator OR "Gestión de Proyectos" OR "Prefactibilidad"', "modo": "Gestión/Factibilidad"},
+        3: {"kw": 'Academic Editor OR "Normas APA" OR "Revisión de Tesis"', "modo": "Académico/Edición"}, 
+        4: {"kw": 'Video Editor OR "Editor de Video" OR "TikTok Content"', "modo": "Creativo/Video"},
+    }
+    return config.get(dia, {"kw": "Remote Assistant", "modo": "General"})
+
+# === 4. EL CEREBRO (IA + FALLBACK) ===
+async def obtener_analisis_hibrido(titulo, descripcion):
     try:
-        url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
-        payload = {"chat_id": TELEGRAM_CHAT_ID, "text": mensaje}
-        requests.post(url, data=payload)
-    except Exception as e:
-        print(f"❌ Error Telegram: {e}")
+        contexto = (
+            "Candidato: Lexan. Perfil: Bilingüe (Inglés/Español), experto en Normas APA/Vancouver, "
+            "Editor de video, Neurociencia (Duke), Proyectos (UC Irvine), Liderazgo (Los Andes). "
+            "Experiencia real en estudios de prefactibilidad para el Jardín Botánico de Tuluá."
+        )
+        prompt = f"{contexto}\nOferta: {titulo}. Escribe un pitch de 3 líneas resaltando el talento que más encaje."
+        
+        response = client.models.generate_content(model="gemini-1.5-flash", contents=prompt)
+        return response.text, "GEMINI_IA"
+    except Exception:
+        desc_l = descripcion.lower()
+        score = sum(pts for cat in SCORING_SISTEMA.values() for word, pts in cat.items() if word in desc_l)
+        if score >= 6:
+            return f"Match Manual (Score: {score}).", "MANUAL"
+        return None, None
 
-async def guardar_en_excel(nueva_oferta):
-    ruta_excel = os.path.join(os.getcwd(), "mis_ofertas.xlsx")
+# === 5. PERSISTENCIA Y NOTIFICACIÓN ===
+async def guardar_excel(datos):
     try:
-        df_nueva = pd.DataFrame([nueva_oferta])
-        if os.path.exists(ruta_excel):
-            df_existente = pd.read_excel(ruta_excel)
-            df_final = pd.concat([df_existente, df_nueva], ignore_index=True)
+        ruta = "mis_ofertas_ia.xlsx"
+        df_nueva = pd.DataFrame([datos])
+        if os.path.exists(ruta):
+            df_final = pd.concat([pd.read_excel(ruta), df_nueva], ignore_index=True).drop_duplicates(subset=['Link'])
         else:
             df_final = df_nueva
-        df_final.drop_duplicates(subset=['Link'], keep='first', inplace=True)
-        df_final.to_excel(ruta_excel, index=False)
+        df_final.to_excel(ruta, index=False, engine='openpyxl')
         return True
-    except Exception as e:
-        print(f"❌ Error al escribir en Excel: {e}")
-        return False
+    except: return False
 
-async def analizar_ofertas(keyword):
+async def analizar():
+    config = obtener_config_dia()
+    print(f"🚀 Iniciando Modo: {config['modo']} | Buscando: {config['kw']}")
+    
     async with async_playwright() as p:
         browser = await p.chromium.launch_persistent_context(
             user_data_dir="./user_data", 
             headless=False,
-            args=["--start-maximized"]
+            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
         )
-        page = browser.pages[0]
-
-        url_chamba = f"https://www.linkedin.com/jobs/search/?keywords={keyword}&location=Bogota%2C%20Colombia&f_WT=2&f_JT=P"
-        print(f"🚀 Iniciando búsqueda: {url_chamba}")
-        await page.goto(url_chamba)
         
-        # Espera para que cargue la lista
-        await page.wait_for_timeout(10000)
+        page = browser.pages[0] if browser.pages else await browser.new_page()
+        
+        try:
+            # URL optimizada para búsqueda global y remota
+            url_busqueda = f"https://www.linkedin.com/jobs/search/?keywords={config['kw']}&f_WT=2"
+            await page.goto(url_busqueda, timeout=60000, wait_until="commit")
+            await page.wait_for_timeout(5000) # Espera extra para renderizado de tarjetas
+        except Exception as e:
+            print(f"⚠️ Error de carga: {e}")
+            await browser.close()
+            return
 
-        # Seleccionamos las tarjetas
-        ofertas = await page.query_selector_all('.job-card-container, [data-occludable-job-id]')
-        total = len(ofertas)
-        print(f"✅ Se encontraron {total} ofertas. Analizando...")
-
-        for i, oferta in enumerate(ofertas):
+        ofertas = await page.query_selector_all('.job-card-container')
+        
+        for oferta in ofertas[:8]:
             try:
-                # 1. Scroll y Clic
-                await oferta.scroll_into_view_if_needed()
-                await page.wait_for_timeout(1000)
-                await oferta.click(force=True)
-                print(f"🧐 [{i+1}/{total}] Analizando...")
-
-                # 2. Espera a que el panel derecho cargue algo de texto
-                # Esperamos 6 segundos para dar tiempo al internet
-                await page.wait_for_timeout(6000) 
-
-                # 3. EXTRACCIÓN DETECTIVE (Buscamos por múltiples vías)
-                try:
-                    # Título: El h2 más grande del panel derecho
-                    titulo = await page.locator('.job-details-jobs-unified-top-card__job-title, h2.t-24').first.inner_text(timeout=5000)
-                    
-                    # Empresa: El nombre que está cerca del título
-                    empresa = await page.locator('.job-details-jobs-unified-top-card__company-name, .jobs-unified-top-card__company-name').first.inner_text(timeout=5000)
-                    
-                    # Descripción: El bloque grande de texto
-                    # Si el selector de clase falla, tomamos el ID job-details
-                    descripcion = await page.locator('#job-details, .jobs-description-content__text').first.inner_text(timeout=5000)
+                await oferta.click()
+                await page.wait_for_timeout(4000)
                 
-                except Exception as e_info:
-                    print(f"⚠️ Error de lectura en oferta {i+1}: No se encontró el texto (posible bloqueo de LinkedIn)")
-                    continue
-
-                link_actual = page.url
-                # Limpiamos el texto para el match
-                desc_clean = descripcion.lower()
-                match_si = any(word in desc_clean for word in PALABRAS_CLAVE_EXITO)
+                titulo = await page.locator('.job-details-jobs-unified-top-card__job-title').first.inner_text()
+                empresa = await page.locator('.job-details-jobs-unified-top-card__company-name').first.inner_text()
+                desc = await page.locator('#job-details').first.inner_text()
                 
-                datos = {
-                    "Fecha": datetime.now().strftime("%Y-%m-%d"),
-                    "Título": titulo.strip(),
-                    "Empresa": empresa.strip(),
-                    "Match": "SÍ" if match_si else "NO",
-                    "Link": link_actual
-                }
-
-                # Guardamos SIEMPRE para verificar que está leyendo
-                if await guardar_en_excel(datos):
-                    if match_si:
-                        print(f"✨ ¡MATCH! {titulo.strip()}")
-                        enviar_telegram(f"🚀 ¡NUEVA CHAMBA!\n\n📌 {titulo.strip()}\n🏢 {empresa.strip()}\n🔗 {link_actual}")
-                    else:
-                        print(f"☁️  Guardada (Sin Match): {titulo.strip()}")
-
-            except Exception as e:
-                print(f"⚠️ Salto inesperado en oferta {i+1}")
-                continue
-
+                pitch, fuente = await obtener_analisis_hibrido(titulo, desc)
+                
+                if pitch:
+                    print(f"✅ Match: {titulo}")
+                    datos = {"Fecha": datetime.now(), "Título": titulo, "Empresa": empresa, "Pitch": pitch, "Link": page.url}
+                    await guardar_excel(datos)
+                    
+                    msg = f"✨ NUEVA CHAMBA ({config['modo']})\n📌 {titulo}\n🏢 {empresa}\n💡 {pitch}\n🔗 {page.url}"
+                    requests.post(f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage", 
+                                  data={"chat_id": TELEGRAM_CHAT_ID, "text": msg})
+            except: continue
+            
         await browser.close()
-        print("\n🏁 ¡Proceso finalizado! Revisa el Excel.")
+        print("🏁 Proceso terminado.")
 
 if __name__ == "__main__":
-    # Mensaje de inicio para Telegram
-    enviar_telegram("🤖 Bot activo: Iniciando búsqueda en Bogotá...")
-    asyncio.run(analizar_ofertas("Python"))
+    asyncio.run(analizar())
