@@ -9,13 +9,13 @@ camera.position = (0, 0, -35)
 camera.rotation_x = 10
 
 # Sonido de fondo
-musica = Audio('Pablo.mp3', loop=True, autoplay=True)
+musica = Audio('sounds/space-chords-loop-310493.mp3', loop=True, autoplay=True)
 
 # Fondo estrellado
-background = Entity(model='quad', texture='textures/s.jpg', scale=12, double_sided=True, position=(0, 0, 1))
+#background = Entity(model='quad', texture='textures/i.jpg', scale=12, double_sided=True, position=(0, 0, 1))
 
 # Sol
-sol = Entity(model='quad', texture='textures/kelvin.jpg', scale=3, position=(0, 0, 0))
+sol = Entity(model='sphere', texture='textures/2k_sun.jpg', scale=3, position=(0, 0, 0))
 light = PointLight(parent=sol, position=(0, 0, -2))
 light2 = PointLight(parent=sol, position=(0, 0, 2))
 light3 = PointLight(parent=sol, position=(0, 2, 0))
